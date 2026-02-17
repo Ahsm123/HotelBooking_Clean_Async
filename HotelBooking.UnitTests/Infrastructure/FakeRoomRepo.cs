@@ -1,21 +1,18 @@
-﻿using HotelBooking.Core;
+﻿
+using HotelBooking.Core;
 
-namespace HotelBooking.UnitTests2.Fakes;
+namespace HotelBooking.UnitTests.Infrastructure;
 
 public class FakeRoomRepo : IRepository<Room>
 {
-    public Task<IEnumerable<Room>> GetAllAsync()
+    public async Task<IEnumerable<Room>> GetAllAsync()
     {
-        var rooms = new List<Room>()
-        {
-            new Room(Id = 1, Description = "Pres. Suit"),
-            new Room(Id = 2, Decsriptoin = "Frederiks Suit")
-        };
-
-        return rooms;
+        var rooms =  new List<Room>();
+        rooms.Add(new Room { Id = 1, Description = "Room 1" });
+        return await Task.FromResult(rooms.AsEnumerable());
     }
 
-    public Task<Room> GetAsync(int id)
+    public async Task<Room> GetAsync(int id)
     {
         throw new NotImplementedException();
     }

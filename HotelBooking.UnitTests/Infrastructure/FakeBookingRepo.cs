@@ -1,12 +1,13 @@
 ﻿using HotelBooking.Core;
 
-namespace HotelBooking.UnitTests2.Fakes;
+namespace HotelBooking.UnitTests.Infrastructure;
 
 public class FakeBookingRepo : IRepository<Booking>
 {
-    public Task<IEnumerable<Booking>> GetAllAsync()
+    public async Task<IEnumerable<Booking>> GetAllAsync()
     {
-        throw new NotImplementedException();
+        List<Booking> bookings = new();
+        return await Task.FromResult(bookings);
     }
 
     public Task<Booking> GetAsync(int id)
