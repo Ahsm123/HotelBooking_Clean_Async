@@ -11,16 +11,16 @@ public class FakeBookingRepo : IRepository<Booking>
         _bookings.Add(new Booking
         {
             Id = 1, 
-            StartDate = DateTime.Now.AddDays(5), 
-            EndDate = DateTime.Now.AddDays(10), 
+            StartDate = DateTime.Today.AddDays(5), 
+            EndDate = DateTime.Today.AddDays(10), 
             IsActive =  true,
             RoomId = 1,
         });
         _bookings.Add(new Booking
         {
             Id = 2, 
-            StartDate = DateTime.Now.AddDays(15), 
-            EndDate = DateTime.Now.AddDays(20), 
+            StartDate = DateTime.Today.AddDays(15), 
+            EndDate = DateTime.Today.AddDays(20), 
             IsActive =  true,
             RoomId = 2,
         });

@@ -10,12 +10,12 @@ public class BookingManagerTests
     private readonly Mock<IRepository<Booking>> _mockBookingRepo;
     private readonly Mock<IRepository<Room>> _mockRoomRepo;
     private readonly IBookingManager _bookingManager;
-    
+
     //Fakes
     private readonly IRepository<Booking> _bookingRepo;
     private readonly IRepository<Room> _roomRepo;
     private readonly IBookingManager _bookingManagerFake;
-    
+
 
     public BookingManagerTests()
     {
@@ -23,7 +23,7 @@ public class BookingManagerTests
         _mockBookingRepo = new Mock<IRepository<Booking>>();
         _mockRoomRepo = new Mock<IRepository<Room>>();
         _bookingManager = new BookingManager(_mockBookingRepo.Object, _mockRoomRepo.Object);
-        
+
         //Fake
         _roomRepo = new FakeRoomRepo();
         _bookingRepo = new FakeBookingRepo();
@@ -31,7 +31,7 @@ public class BookingManagerTests
     }
 
     #region FindAvailableRoom
-    
+
     [Theory]
     [InlineData(5, 10, 2)]
     [InlineData(15, 20, 1)]
@@ -64,7 +64,7 @@ public class BookingManagerTests
         var today = DateTime.Today;
         var startDate = today.AddDays(startDaysFromToday);
         var endDate = today.AddDays(endDaysFromToday);
-        
+
         //Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(() => _bookingManager.FindAvailableRoom(startDate, endDate));
     }
@@ -75,57 +75,117 @@ public class BookingManagerTests
         //Er det dårlig praksis at tilføje en booking i Arrange, istedet for at den er hardcoded i 
         //booking repo? Så er vi afhængig af den metode. Eller er det selve logikken i at have FindAvailableRoom public
         //når create booking underliggende er afhængig af FindAvailableRoom. (Encapsulation)
-        
+
         //Arrange
-        
+
         //Med Moq
-         // _mockBookingRepo.Setup(x => x.GetAllAsync())
-         //     .ReturnsAsync(new List<Booking> { new Booking
-         //     {
-         //         RoomId = 1, 
-         //         StartDate =  DateTime.Today.AddDays(1), 
-         //         EndDate = DateTime.Today.AddDays(5),
-         //         IsActive = true
-         //     } });
-         //
-         // _mockRoomRepo.Setup(x => x.GetAllAsync())
-         //     .ReturnsAsync(new List<Room> { new Room { Id = 1 } });
-         
-         //Act
+        // _mockBookingRepo.Setup(x => x.GetAllAsync())
+        //     .ReturnsAsync(new List<Booking> { new Booking
+        //     {
+        //         RoomId = 1, 
+        //         StartDate =  DateTime.Today.AddDays(1), 
+        //         EndDate = DateTime.Today.AddDays(5),
+        //         IsActive = true
+        //     } });
+        //
+        // _mockRoomRepo.Setup(x => x.GetAllAsync())
+        //     .ReturnsAsync(new List<Room> { new Room { Id = 1 } });
+
+        //Act
         // var result = await _bookingManager.FindAvailableRoom(DateTime.Today.AddDays(2), DateTime.Today.AddDays(6));
-        
+
         var result = await _bookingManagerFake.FindAvailableRoom(DateTime.Today.AddDays(9), DateTime.Today.AddDays(16));
-        
+
         Assert.Equal(-1, result);
     }
-    
+
     #endregion
-    
+
     #region CreateBooking
     [Fact]
     public async Task CreateBooking_BrokenLogic()
     {
         var bookingOne = new Booking
         {
-            StartDate = DateTime.Now.AddDays(22),
-            EndDate = DateTime.Now.AddDays(25),
+            StartDate = DateTime.Today.AddDays(22),
+            EndDate = DateTime.Today.AddDays(25),
             RoomId = 2,
             IsActive = true,
         };
-        
-        var result = await  _bookingManagerFake.CreateBooking(bookingOne);
-        
+
+        var result = await _bookingManagerFake.CreateBooking(bookingOne);
+
         var availableRoomId = await _bookingManagerFake.FindAvailableRoom(bookingOne.StartDate, bookingOne.EndDate);
-        
+
         Assert.Equal(2, availableRoomId);
         Assert.True(result);
     }
-    
-    
-    
     #endregion
+
+
+    #region GetFullyOccupiedDates
+    [Fact]
+    public async Task GetFullyOccupiedDates_BookedPeriod_ListOfDates()
+    {
+        //Arrange
+
+        // Books the room for two days, so that the hotel is fully booked for those two days
+        var booking1 = await _bookingManagerFake.CreateBooking(new Booking
+        {
+            StartDate = DateTime.Today.AddDays(2),
+            EndDate = DateTime.Today.AddDays(3),
+            IsActive = true
+        });
+
+
+        //Books the second room for two days, so that the hotel is fully booked for those two days
+        var booking2 = await _bookingManagerFake.CreateBooking(new Booking
+        {
+            StartDate = DateTime.Today.AddDays(2),
+            EndDate = DateTime.Today.AddDays(3),
+            IsActive = true
+        });
+
+        //Act 
+
+        var result = await _bookingManagerFake.GetFullyOccupiedDates(DateTime.Today.AddDays(2), DateTime.Today.AddDays(3));
+
+        //Assert
+        Assert.Equal(2, result.Count);
+    }
+
+    [Fact]
+    public async Task GetFullyOccupiedDates_BookedPeriod_ArgurmentException()
+    {
+        //Arrange
+
+        DateTime startDate = DateTime.Today.AddDays(2);
+        DateTime endDate = DateTime.Today.AddDays(1);
+        //Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => _bookingManagerFake.GetFullyOccupiedDates(startDate, endDate));
+    }
+
+
+    [Fact]
+    public async Task GetFullyOccupiedDates_BookedPeriod_EmptyList()
+    {
+        //Arrange
+
+        DateTime startDate = DateTime.Today.AddDays(1);
+        DateTime endDate = DateTime.Today.AddDays(2);
+
+        //Act 
+
+        List<DateTime> result = await _bookingManagerFake.GetFullyOccupiedDates(startDate, endDate);
+
+        //Assert
+        Assert.Equal(0, result.Count);
+    }
+
+    
 
 
 
 }
 
+#endregion
