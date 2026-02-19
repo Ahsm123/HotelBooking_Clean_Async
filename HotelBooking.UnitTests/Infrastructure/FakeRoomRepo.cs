@@ -9,6 +9,7 @@ public class FakeRoomRepo : IRepository<Room>
     {
         var rooms =  new List<Room>();
         rooms.Add(new Room { Id = 1, Description = "Room 1" });
+        rooms.Add(new Room { Id = 2, Description = "Room 2" });
         return await Task.FromResult(rooms.AsEnumerable());
     }
 
