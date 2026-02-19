@@ -4,10 +4,31 @@ namespace HotelBooking.UnitTests.Infrastructure;
 
 public class FakeBookingRepo : IRepository<Booking>
 {
+    private readonly List<Booking> _bookings = new();
+
+    public FakeBookingRepo()
+    {
+        _bookings.Add(new Booking
+        {
+            Id = 1, 
+            StartDate = DateTime.Now.AddDays(5), 
+            EndDate = DateTime.Now.AddDays(10), 
+            IsActive =  true,
+            RoomId = 1,
+        });
+        _bookings.Add(new Booking
+        {
+            Id = 2, 
+            StartDate = DateTime.Now.AddDays(15), 
+            EndDate = DateTime.Now.AddDays(20), 
+            IsActive =  true,
+            RoomId = 2,
+        });
+    }
+    
     public async Task<IEnumerable<Booking>> GetAllAsync()
     {
-        List<Booking> bookings = new();
-        return await Task.FromResult(bookings);
+        return  _bookings;
     }
 
     public Task<Booking> GetAsync(int id)
@@ -17,7 +38,8 @@ public class FakeBookingRepo : IRepository<Booking>
 
     public Task AddAsync(Booking entity)
     {
-        throw new NotImplementedException();
+        _bookings.Add(entity);
+        return Task.CompletedTask;
     }
 
     public Task EditAsync(Booking entity)
